@@ -1,6 +1,7 @@
 package br.com.unipds;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public class Main {
 
@@ -19,12 +20,15 @@ public class Main {
             arquivoDeSaida = opcoesCLI.getArquivoDeSaida();
             modoVerboso = opcoesCLI.isModoVerboso();
 
+            var renderizadorMD = new RenderizadorMD();
+            List<String> htmls = renderizadorMD.renderizar(diretorioDosMD);
+
             if ("pdf".equals(formato)) {
                 var geradorPDF = new GeradorPDF();
-                geradorPDF.gera(diretorioDosMD, arquivoDeSaida);
+                geradorPDF.gera(htmls, arquivoDeSaida);
             } else if ("epub".equals(formato)) {
                 var geradorEPUB = new GeradorEPUB();
-                geradorEPUB.gera(diretorioDosMD, arquivoDeSaida);
+                geradorEPUB.gera(htmls, arquivoDeSaida);
             } else {
                 throw new IllegalArgumentException("Formato do ebook inválido: " + formato);
             }
