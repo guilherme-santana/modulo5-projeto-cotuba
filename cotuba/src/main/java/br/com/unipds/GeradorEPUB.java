@@ -14,7 +14,7 @@ import java.util.List;
 
 public class GeradorEPUB {
 
-    public void gera(List<String> htmls, Path arquivoDeSaida) {
+    public void gera(List<Capitulo> capitulos, Path arquivoDeSaida) {
 
         try {
             var epub = new Book();
@@ -25,20 +25,22 @@ public class GeradorEPUB {
 
             boolean[] ehPrimeiroCapitulo = {true};
 
-            htmls.forEach(html -> {
-                // TODO: usar título do capítulo
+            capitulos.forEach(capitulo -> {
+
+                String html = capitulo.getHtml();
+                String titulo = capitulo.getTitulo();
                 String epubHtml = """
-                          <html xmlns="http://www.w3.org/1999/xhtml">
+                          <capitulo xmlns="http://www.w3.org/1999/xhtml">
                             <head>
-                              <title>Capítulo</title>
+                              <title>%s</title>
                             </head>
                             <body>
                               %s
                             </body>
-                          </html>
-                        """.formatted(html);
+                          </capitulo>
+                        """.formatted(titulo, html);
                 var chapter = new Resource(epubHtml.getBytes(), MediatypeService.XHTML);
-                epub.addSection("Capítulo", chapter);
+                epub.addSection(titulo, chapter);
 
                 if (ehPrimeiroCapitulo[0]) {
                     epub.getGuide().addReference(new GuideReference(chapter, "text", "Start Reading"));

@@ -11,7 +11,7 @@ import java.util.Comparator;
 
 public class LeitorOpcoesCLI {
     private Path diretorioDosMD;
-    private String formato;
+    private FormatoEbook formato;
     private Path arquivoDeSaida;
     private boolean modoVerboso = false;
 
@@ -42,10 +42,8 @@ public class LeitorOpcoesCLI {
             try {
                 cmd = cmdParser.parse(options, args);
             } catch (ParseException e) {
-                System.err.println(e.getMessage());
                 ajuda.printHelp("cotuba", options);
-                System.exit(1);
-                return;
+                throw new IllegalArgumentException(e.getMessage(), e);
             }
 
             String nomeDoDiretorioDosMD = cmd.getOptionValue("dir");
@@ -63,16 +61,20 @@ public class LeitorOpcoesCLI {
             String nomeDoFormatoDoEbook = cmd.getOptionValue("format");
 
             if (nomeDoFormatoDoEbook != null) {
-                formato = nomeDoFormatoDoEbook.toLowerCase();
+                try {
+                    formato = FormatoEbook.valueOf(nomeDoFormatoDoEbook.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Formato do ebook inválido: " + nomeDoFormatoDoEbook);
+                }
             } else {
-                formato = "pdf";
+                formato = FormatoEbook.PDF;
             }
 
             String nomeDoArquivoDeSaidaDoEbook = cmd.getOptionValue("output");
             if (nomeDoArquivoDeSaidaDoEbook != null) {
                 arquivoDeSaida = Paths.get(nomeDoArquivoDeSaidaDoEbook);
             } else {
-                arquivoDeSaida = Paths.get("book." + formato.toLowerCase());
+                arquivoDeSaida = Paths.get("book." + formato.name().toLowerCase());
             }
             if (Files.isDirectory(arquivoDeSaida)) {
                 // deleta arquivos do diretório recursivamente
@@ -92,7 +94,7 @@ public class LeitorOpcoesCLI {
         return diretorioDosMD;
     }
 
-    public String getFormato() {
+    public FormatoEbook getFormato() {
         return formato;
     }
 

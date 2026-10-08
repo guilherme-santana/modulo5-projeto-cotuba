@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 public class RenderizadorMD {
 
-    public List<String> renderizar(Path diretorioMD) {
+    public List<Capitulo> renderizar(Path diretorioMD) {
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.md");
         try (Stream<Path> streamMDs = Files.list(diretorioMD)) {
             List<Path> arquivosMD = streamMDs
@@ -29,17 +29,22 @@ public class RenderizadorMD {
             }
 
             return arquivosMD.stream().map(arquivoMD -> {
+                var capitulo = new Capitulo();
+
                 Parser parser = Parser.builder().build();
                 Node document = null;
                 try {
-                    document = parser.parseReader(Files.newBufferedReader(arquivoMD));
+                    String markdown = Files.readString(arquivoMD);
+                    capitulo.setMarkdown(markdown);
+                    capitulo.setArquivoMarkdown(arquivoMD);
+                    document = parser.parse(markdown);
                     document.accept(new AbstractVisitor() {
                         @Override
                         public void visit(Heading heading) {
                             if (heading.getLevel() == 1) {
                                 // capítulo
                                 String tituloDoCapitulo = ((Text) heading.getFirstChild()).getLiteral();
-                                // TODO: usar título do capítulo
+                                capitulo.setTitulo(tituloDoCapitulo);
                             } else if (heading.getLevel() == 2) {
                                 // seção
                             } else if (heading.getLevel() == 3) {
@@ -54,8 +59,9 @@ public class RenderizadorMD {
 
                 try {
                     HtmlRenderer renderer = HtmlRenderer.builder().build();
-                    return renderer.render(document);
-
+                    String html = renderer.render(document);
+                    capitulo.setHtml(html);
+                    return capitulo;
                 } catch (Exception ex) {
                     throw new IllegalStateException("Erro ao renderizar para HTML o arquivo " + arquivoMD, ex);
                 }

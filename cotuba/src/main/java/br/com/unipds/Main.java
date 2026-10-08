@@ -5,10 +5,13 @@ import java.util.List;
 
 public class Main {
 
-    void main(String[] args) {
+    public static void main(String[] args) {
+        new Main().executar(args);
+    }
 
+    public int executar(String[] args) {
         Path diretorioDosMD;
-        String formato;
+        FormatoEbook formato;
         Path arquivoDeSaida;
         boolean modoVerboso = false;
 
@@ -21,21 +24,20 @@ public class Main {
             modoVerboso = opcoesCLI.isModoVerboso();
 
             var renderizadorMD = new RenderizadorMD();
-            List<String> htmls = renderizadorMD.renderizar(diretorioDosMD);
+            List<Capitulo> capitulos = renderizadorMD.renderizar(diretorioDosMD);
 
-            if ("pdf".equals(formato)) {
+            if (FormatoEbook.PDF.equals(formato)) {
                 var geradorPDF = new GeradorPDF();
-                geradorPDF.gera(htmls, arquivoDeSaida);
-            } else if ("epub".equals(formato)) {
+                geradorPDF.gera(capitulos, arquivoDeSaida);
+            } else if (FormatoEbook.EPUB.equals(formato)) {
                 var geradorEPUB = new GeradorEPUB();
-                geradorEPUB.gera(htmls, arquivoDeSaida);
+                geradorEPUB.gera(capitulos, arquivoDeSaida);
             } else {
                 throw new IllegalArgumentException("Formato do ebook inválido: " + formato);
             }
 
             System.out.println("Arquivo gerado com sucesso: " + arquivoDeSaida);
-            System.exit(0);
-
+            return 0;
 
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
@@ -43,7 +45,7 @@ public class Main {
                 System.err.println();
                 ex.printStackTrace();
             }
-            System.exit(1);
+            return 1;
         }
     }
 }

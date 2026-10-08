@@ -17,7 +17,7 @@ import java.util.List;
 
 public class GeradorPDF {
 
-    public void gera(List<String> htmls, Path arquivoDeSaida) {
+    public void gera(List<Capitulo> capitulos, Path arquivoDeSaida) {
         try (var writer = new PdfWriter(Files.newOutputStream(arquivoDeSaida));
              var pdf = new PdfDocument(writer);
              var pdfDocument = new Document(pdf)) {
@@ -26,8 +26,9 @@ public class GeradorPDF {
             pdf.getDocumentInfo().setTitle("Livro");
             pdf.getDocumentInfo().setAuthor("Autor");
 
-            htmls.forEach(html -> {
+            capitulos.forEach(capitulo -> {
 
+                String html = capitulo.getHtml();
                 List<IElement> convertToElements = HtmlConverter.convertToElements(html);
 
                 if (pdf.getNumberOfPages() == 0) {
@@ -39,8 +40,7 @@ public class GeradorPDF {
                     rootOutline = pdf.getOutlines(false);
                 }
 
-                // TODO: usar título do capítulo
-                PdfOutline chapterOutline = rootOutline.addOutline("Capítulo");
+                PdfOutline chapterOutline = rootOutline.addOutline(capitulo.getTitulo());
                 chapterOutline.addDestination(PdfExplicitDestination.createFit(pdf.getLastPage()));
 
                 for (IElement element : convertToElements) {
